@@ -1,86 +1,89 @@
-const cells = document.querySelectorAll('.cell');
-const message = document.getElementById('message');
+const X_CLASS = 'x'
+const CIRCLE_CLASS = 'circle'
+const WINNING_COMBINATIONS = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6]
+]
+const cellElements = document.querySelectorAll('[data-cell]')
+const board = document.getElementById('board')
+const winningMessageElement = document.getElementById('winningMessage')
+const restartButton = document.getElementById('restartButton')
+const winningMessageTextElement = document.querySelector('[data-winning-message-text]')
+let circleTurn
 
-let turn = 'X';
-let board = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '];
+startGame()
 
-// Function to handle cell click (modified)
-const handleClick = (event) => {
-  const cellIndex = event.target.dataset.cell;
-  if (board[cellIndex] !== ' ') {
-    return; // Cell already occupied
-  }
+restartButton.addEventListener('click', startGame)
 
-  board[cellIndex] = turn;
-  event.target.textContent = turn;
+function startGame() {
+  circleTurn = false
+  cellElements.forEach(cell => {
+    cell.classList.remove(X_CLASS)
+    cell.classList.remove(CIRCLE_CLASS)
+    cell.removeEventListener('click', handleClick)
+    cell.addEventListener('click', handleClick, { once: true })
+  })
+  setBoardHoverClass()
+  winningMessageElement.classList.remove('show')
+}
 
-  // Check for win or draw
-  if (checkWin(board, turn)) {
-    message.textContent = `${turn} wins!`;
-    // Disable further clicks
-  } else if (checkDraw(board)) {
-    message.textContent = "It's a draw!";
-    // Disable further clicks
+function handleClick(e) {
+  const cell = e.target
+  const currentClass = circleTurn ? CIRCLE_CLASS : X_CLASS
+  placeMark(cell, currentClass)
+  if (checkWin(currentClass)) {
+    endGame(false)
+  } else if (isDraw()) {
+    endGame(true)
   } else {
-    // AI move
-    const aiMove = aiTurn(board);
-    board[aiMove] = 'O';
-    cells[aiMove].textContent = 'O';
-
-    // Check for win or draw again
-    if (checkWin(board, 'O')) {
-      message.textContent = "AI wins!";
-      // Disable further clicks
-    } else if (checkDraw(board)) {
-      message.textContent = "It's a draw!";
-      // Disable further clicks
-    } else {
-      // Switch turns
-      turn = turn === 'X' ? 'O' : 'X';
-      message.textContent = `${turn}'s turn`;
-    }
+    swapTurns()
+    setBoardHoverClass()
   }
-};
+}
 
-// Function to check for win (no changes)
-
-// Function to check for draw (no changes)
-
-// AI turn function
-const aiTurn = (board) => {
-  // Implement your AI logic here
-  // Here's a simplified example prioritizing winning moves and blocking opponent's winning moves:
-
-  // Find all empty cells
-  const emptyCells = [];
-  for (let i = 0; i < board.length; i++) {
-    if (board[i] === ' ') {
-      emptyCells.push(i);
-    }
+function endGame(draw) {
+  if (draw) {
+    winningMessageTextElement.innerText = 'Draw!'
+  } else {
+    winningMessageTextElement.innerText = `${circleTurn ? "O's" : "X's"} Wins!`
   }
+  winningMessageElement.classList.add('show')
+}
 
-  // Check for AI winning moves
-  for (let i = 0; i < emptyCells.length; i++) {
-    const tempBoard = [...board]; // Copy the board
-    tempBoard[emptyCells[i]] = 'O'; // Simulate AI move
-    if (checkWin(tempBoard, 'O')) {
-      return emptyCells[i]; // Return winning move
-    }
+function isDraw() {
+  return [...cellElements].every(cell => {
+    return cell.classList.contains(X_CLASS) || cell.classList.contains(CIRCLE_CLASS)
+  })
+}
+
+function placeMark(cell, currentClass) {
+  cell.classList.add(currentClass)
+}
+
+function swapTurns() {
+  circleTurn = !circleTurn
+}
+
+function setBoardHoverClass() {
+  board.classList.remove(X_CLASS)
+  board.classList.remove(CIRCLE_CLASS)
+  if (circleTurn) {
+    board.classList.add(CIRCLE_CLASS)
+  } else {
+    board.classList.add(X_CLASS)
   }
+}
 
-  // Check for blocking opponent's winning moves
-  for (let i = 0; i < emptyCells.length; i++) {
-    const tempBoard = [...board]; // Copy the board
-    tempBoard[emptyCells[i]] = 'X'; // Simulate opponent's move
-    if (checkWin(tempBoard, 'X')) {
-      return emptyCells[i]; // Block opponent's winning move
-    }
-  }
-
-  // Choose a random empty cell if no specific move found
-  return emptyCells[Math.floor(Math.random() * emptyCells.length)];
-};
-
-// Add click event listeners to cells (no changes)
-
-// Initial message (no changes)
+function checkWin(currentClass) {
+  return WINNING_COMBINATIONS.some(combination => {
+    return combination.every(index => {
+      return cellElements[index].classList.contains(currentClass)
+    })
+  })
+}
