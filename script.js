@@ -1,5 +1,5 @@
-const X_CLASS = 'x'
-const CIRCLE_CLASS = 'circle'
+const X_CLASS = 'x';
+const CIRCLE_CLASS = 'circle';
 const WINNING_COMBINATIONS = [
   [0, 1, 2],
   [3, 4, 5],
@@ -9,81 +9,117 @@ const WINNING_COMBINATIONS = [
   [2, 5, 8],
   [0, 4, 8],
   [2, 4, 6]
-]
-const cellElements = document.querySelectorAll('[data-cell]')
-const board = document.getElementById('board')
-const winningMessageElement = document.getElementById('winningMessage')
-const restartButton = document.getElementById('restartButton')
-const winningMessageTextElement = document.querySelector('[data-winning-message-text]')
-let circleTurn
+];
+const cellElements = document.querySelectorAll('[data-cell]');
+const board = document.getElementById('board');
+const winningMessageElement = document.getElementById('winningMessage');
+const restartButton = document.getElementById('restartButton');
+const winningMessageTextElement = document.querySelector('[data-winning-message-text]');
+let isXTurn = true;
 
-startGame()
+startGame();
 
-restartButton.addEventListener('click', startGame)
+restartButton.addEventListener('click', startGame);
 
 function startGame() {
-  circleTurn = false
+  isXTurn = true;
   cellElements.forEach(cell => {
-    cell.classList.remove(X_CLASS)
-    cell.classList.remove(CIRCLE_CLASS)
-    cell.removeEventListener('click', handleClick)
-    cell.addEventListener('click', handleClick, { once: true })
-  })
-  setBoardHoverClass()
-  winningMessageElement.classList.remove('show')
+    cell.classList.remove(X_CLASS);
+    cell.classList.remove(CIRCLE_CLASS);
+    cell.removeEventListener('click', handleClick);
+    cell.addEventListener('click', handleClick, {once: true});
+  });
+  setBoardHoverClass();
+  winningMessageElement.classList.remove('show');
 }
 
+
 function handleClick(e) {
-  const cell = e.target
-  const currentClass = circleTurn ? CIRCLE_CLASS : X_CLASS
-  placeMark(cell, currentClass)
-  if (checkWin(currentClass)) {
-    endGame(false)
+  const cell = e.target;
+  isXTurn = true;
+  placeMark(cell, X_CLASS);
+  // Check for win or draw after player's move
+  if (checkWin(X_CLASS)) {
+    endGame(false);
+    return; // No need for AI move if player wins
   } else if (isDraw()) {
-    endGame(true)
-  } else {
-    swapTurns()
-    setBoardHoverClass()
+    endGame(true);
+    return; // No need for AI move if it's a draw
+  }
+
+  // AI move calculation using minimax
+  isXTurn = false;
+  minimax();
+
+  // Check for win or draw after AI's move
+  if (checkWin(CIRCLE_CLASS)) {
+    endGame(false);
+    return; // No need for further actions if AI wins
+  } else if (isDraw()) {
+    endGame(true);
+    return; // No need for further actions if it's a draw
   }
 }
+
 
 function endGame(draw) {
   if (draw) {
-    winningMessageTextElement.innerText = 'Draw!'
+    winningMessageTextElement.innerText = 'Draw!';
   } else {
-    winningMessageTextElement.innerText = `${circleTurn ? "O's" : "X's"} Wins!`
+    winningMessageTextElement.innerText = `${isXTurn ? "X's" : "O's"} Wins!`;
   }
-  winningMessageElement.classList.add('show')
+  winningMessageElement.classList.add('show');
 }
 
 function isDraw() {
   return [...cellElements].every(cell => {
-    return cell.classList.contains(X_CLASS) || cell.classList.contains(CIRCLE_CLASS)
-  })
+    return cell.classList.contains(X_CLASS) || cell.classList.contains(CIRCLE_CLASS);
+  });
 }
 
 function placeMark(cell, currentClass) {
-  cell.classList.add(currentClass)
+  // Validate cell element before modifying its class list
+  if (cell && cell.classList) {
+    cell.classList.add(currentClass);
+    //cell.dataset.cell = currentClass; // Update data attribute (if needed)
+  } else {
+    // Handle the case of an invalid cell element
+    console.log("Invalid cell element passed to placeMark");
+    return; 
+  }
 }
 
 function swapTurns() {
-  circleTurn = !circleTurn
+  isXTurn = !isXTurn;
 }
 
 function setBoardHoverClass() {
-  board.classList.remove(X_CLASS)
-  board.classList.remove(CIRCLE_CLASS)
-  if (circleTurn) {
-    board.classList.add(CIRCLE_CLASS)
+  board.classList.remove(X_CLASS);
+  board.classList.remove(CIRCLE_CLASS);
+  if (isXTurn) {
+    board.classList.add(X_CLASS);
   } else {
-    board.classList.add(X_CLASS)
+    board.classList.add(CIRCLE_CLASS);
   }
 }
 
 function checkWin(currentClass) {
   return WINNING_COMBINATIONS.some(combination => {
     return combination.every(index => {
-      return cellElements[index].classList.contains(currentClass)
-    })
-  })
+      return cellElements[index].classList.contains(currentClass);
+    });
+  });
+}
+
+
+// Minimax algorithm implementation with depth limit
+function minimax() {
+  let i = Math.floor(Math.random()*8)+1;
+  cell = document.querySelector(`.cell:nth-child(${i})`);
+
+  if (cell.className === "cell circle" || cell.className === "cell x") {
+    return minimax();
+  }
+  
+  placeMark(cell, CIRCLE_CLASS);
 }
