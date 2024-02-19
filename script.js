@@ -81,12 +81,7 @@ function placeMark(cell, currentClass) {
   // Validate cell element before modifying its class list
   if (cell && cell.classList) {
     cell.classList.add(currentClass);
-    //cell.dataset.cell = currentClass; // Update data attribute (if needed)
-  } else {
-    // Handle the case of an invalid cell element
-    console.log("Invalid cell element passed to placeMark");
-    return; 
-  }
+  } 
 }
 
 function swapTurns() {
@@ -120,6 +115,7 @@ function minimax() {
   if (cell.className === "cell circle" || cell.className === "cell x") {
     return minimax();
   }
-  
+
   placeMark(cell, CIRCLE_CLASS);
-}
+} 
+
