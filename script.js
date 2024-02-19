@@ -27,7 +27,7 @@ function startGame() {
     cell.classList.remove(X_CLASS);
     cell.classList.remove(CIRCLE_CLASS);
     cell.removeEventListener('click', handleClick);
-    cell.addEventListener('click', handleClick, {once: true});
+    cell.addEventListener('click', handleClick, { once: true });
   });
   setBoardHoverClass();
   winningMessageElement.classList.remove('show');
@@ -78,7 +78,7 @@ function placeMark(cell, currentClass) {
   // Validate cell element before modifying its class list
   if (cell && cell.classList) {
     cell.classList.add(currentClass);
-  } 
+  }
 }
 
 function swapTurns() {
@@ -106,7 +106,7 @@ function checkWin(currentClass) {
 
 // Minimax algorithm implementation with depth limit
 function minimax() {
-  let i = Math.floor(Math.random()*8)+1;
+  let i = Math.floor(Math.random() * 8) + 1;
   cell = document.querySelector(`.cell:nth-child(${i})`);
 
   if (cell.className === "cell circle" || cell.className === "cell x") {
@@ -114,5 +114,5 @@ function minimax() {
   }
 
   return cell;
-} 
+}
 
