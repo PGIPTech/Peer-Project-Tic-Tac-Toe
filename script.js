@@ -33,32 +33,29 @@ function startGame() {
   winningMessageElement.classList.remove('show');
 }
 
+function placeTurn(cell) {
+  swapTurns()
+  const currentClass = isXTurn ? X_CLASS : CIRCLE_CLASS;
 
-function handleClick(e) {
-  const cell = e.target;
-  isXTurn = true;
-  placeMark(cell, X_CLASS);
+  placeMark(cell, currentClass);
   // Check for win or draw after player's move
-  if (checkWin(X_CLASS)) {
+  if (checkWin(currentClass)) {
     endGame(false);
     return; // No need for AI move if player wins
   } else if (isDraw()) {
     endGame(true);
     return; // No need for AI move if it's a draw
   }
+}
+
+
+function handleClick(e) {
+  const playerCell = e.target;
+  placeTurn(playerCell)
 
   // AI move calculation using minimax
-  isXTurn = false;
-  minimax();
-
-  // Check for win or draw after AI's move
-  if (checkWin(CIRCLE_CLASS)) {
-    endGame(false);
-    return; // No need for further actions if AI wins
-  } else if (isDraw()) {
-    endGame(true);
-    return; // No need for further actions if it's a draw
-  }
+  const aiCell = minimax();
+  placeTurn(aiCell);
 }
 
 
@@ -116,6 +113,6 @@ function minimax() {
     return minimax();
   }
 
-  placeMark(cell, CIRCLE_CLASS);
+  return cell;
 } 
 
